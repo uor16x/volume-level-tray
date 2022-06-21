@@ -1,7 +1,11 @@
 from infi.systray import SysTrayIcon
 from PIL import Image, ImageDraw,ImageFont
+import subprocess
+from subprocess import Popen, PIPE
 import time
 
+# Constants
+mute_command = "$obj = new-object -com wscript.shell; $obj.SendKeys([char]173)"
 font_type = ImageFont.truetype("arial.ttf", 55)
 
 def set_icon_text(icon_image_name: str, text: int):
@@ -17,13 +21,23 @@ def update_systray(icon_image_name: str):
   else:
     systray.update(icon=icon_image_name)
 
+def mute(_):
+  subprocess.run(["powershell", "-Command", mute_command], capture_output=True)
+
+def get_volume_level():
+  out = subprocess.check_output('powershell ./get_volume.ps1', shell=True, encoding='utf8').strip()
+  return int(float(out.replace(',', '.')) * 100)
+
+
 def main():
   default_icon_name = "volume_tray.ico"
   set_icon_text(default_icon_name, 25)
-  systray = SysTrayIcon(default_icon_name, "", ())
+  menu_options = (("Toggle mute", None, mute),)
+  systray = SysTrayIcon(default_icon_name, "", menu_options)
   systray.start()
+  print(get_volume_level())
   while True:
     systray.update(icon=default_icon_name)
-    time.sleep(5)
+    time.sleep(0.5)
 
 main()
