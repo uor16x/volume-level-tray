@@ -16,9 +16,11 @@ class Audio:
   def get_volume(self):
     return int(round(self.volume.GetMasterVolumeLevelScalar() * 100))
 
+  def is_muted(self):
+    return self.volume.GetMute()
+
   def toggle_mute(self):
-    isMuted = self.volume.GetMute()
-    self.volume.SetMute(not isMuted, None)
+    self.volume.SetMute(not self.is_muted(), None)
 
 class TaskBarIcon(wx.adv.TaskBarIcon):
     tray_icon = 'volume_tray.ico'
@@ -61,7 +63,6 @@ class IconUpdateThread(Thread):
     def run(self):
       while True:
         currVolume = self.audio.get_volume()
-        self.audio.toggle_mute()
         TaskBarIcon.refresh_icon(currVolume)
         self.icon.update_icon()
         time.sleep(.5)
@@ -70,13 +71,17 @@ class App(wx.Frame):
     def __init__(self):
       wx.Frame.__init__(self, None, wx.ID_ANY, "", size=(1,1))
       wx.Panel(self)
-      self.Bind(wx.EVT_CLOSE, self.onClose)
+      self.Bind(wx.EVT_CLOSE, self.on_close)
 
       self.icon = TaskBarIcon(self)
       self.audio = Audio()
+      self.icon.Bind(wx.adv.EVT_TASKBAR_LEFT_DOWN, self.mute)
       IconUpdateThread(self.icon, self.audio)
+
+    def mute(self, event):
+      self.audio.toggle_mute()
       
-    def onClose(self, evt):
+    def on_close(self, event):
       self.icon.RemoveIcon()
       self.icon.Destroy()
       self.Destroy()
