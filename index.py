@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw,ImageFont
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
-from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume, ISimpleAudioVolume
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from threading import Thread
 import wx.adv
 import wx
@@ -24,7 +24,8 @@ class Audio:
 
 class TaskBarIcon(wx.adv.TaskBarIcon):
     tray_icon = 'volume_tray.ico'
-    font_type = ImageFont.truetype("arial.ttf", 55)
+    font_type = ImageFont.truetype("arial.ttf", 45)
+    size = 50
 
     def __init__(self, frame):
       wx.adv.TaskBarIcon.__init__(self)
@@ -39,10 +40,13 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
       return menu
 
     @staticmethod
-    def refresh_icon(volume):
-      new_img = Image.new('RGBA', (65, 65), color = (255, 255, 255, 0))
+    def refresh_icon(volume, is_muted):
+      new_img = Image.new('RGBA', (TaskBarIcon.size, TaskBarIcon.size), color = (255, 255, 255, 0))
       drawed = ImageDraw.Draw(new_img)
-      drawed.text((5, 5), f"{volume}", fill=(255,255,255), font = TaskBarIcon.font_type)
+      if is_muted:
+        drawed.line([(0, 0), (TaskBarIcon.size, TaskBarIcon.size)], fill = (255,0,0,150), width = 8)
+        drawed.line([(0, TaskBarIcon.size), (TaskBarIcon.size, 0)], fill = (255,0,0,150), width = 8)
+      drawed.text((0, 0), f"{volume}", fill=(255,255,255), font = TaskBarIcon.font_type)
       new_img.save(TaskBarIcon.tray_icon)
 
     def update_icon(self):
@@ -63,9 +67,10 @@ class IconUpdateThread(Thread):
     def run(self):
       while True:
         currVolume = self.audio.get_volume()
-        TaskBarIcon.refresh_icon(currVolume)
+        is_muted = self.audio.is_muted()
+        TaskBarIcon.refresh_icon(currVolume, is_muted)
         self.icon.update_icon()
-        time.sleep(.5)
+        time.sleep(.2)
 
 class App(wx.Frame):
     def __init__(self):
