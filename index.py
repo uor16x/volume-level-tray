@@ -21,16 +21,16 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
     font_type = ImageFont.truetype("arial.ttf", 55)
 
     def __init__(self, frame):
-        wx.adv.TaskBarIcon.__init__(self)
-        self.frame = frame
-        self.update_icon()
+      wx.adv.TaskBarIcon.__init__(self)
+      self.frame = frame
+      self.update_icon()
 
     def CreatePopupMenu(self):
-        menu = wx.Menu()
-        exitItem = wx.MenuItem(menu, -1, 'Exit')
-        menu.Bind(wx.EVT_MENU, self.on_exit, id=exitItem.GetId())
-        menu.Append(exitItem)
-        return menu
+      menu = wx.Menu()
+      exitItem = wx.MenuItem(menu, -1, 'Exit')
+      menu.Bind(wx.EVT_MENU, self.on_exit, id=exitItem.GetId())
+      menu.Append(exitItem)
+      return menu
 
     @staticmethod
     def refresh_icon(volume):
@@ -40,43 +40,43 @@ class TaskBarIcon(wx.adv.TaskBarIcon):
       new_img.save(TaskBarIcon.tray_icon)
 
     def update_icon(self):
-        icon = wx.Icon(wx.Bitmap(TaskBarIcon.tray_icon))
-        self.SetIcon(icon, 'Volume level')
+      icon = wx.Icon(wx.Bitmap(TaskBarIcon.tray_icon))
+      self.SetIcon(icon, 'Volume level')
 
     def on_exit(self, event):
-        self.frame.Close()
+      self.frame.Close()
 
 class IconUpdateThread(Thread):
     def __init__(self, icon, audio):
-        Thread.__init__(self)
-        self.daemon = True
+      Thread.__init__(self)
+      self.daemon = True
 
-        self.audio = audio
-        self.icon = icon
-        self.start()
+      self.audio = audio
+      self.icon = icon
+      self.start()
     def run(self):
-        while True:
-          currVolume = self.audio.getVolume()
-          TaskBarIcon.refresh_icon(currVolume)
-          self.icon.update_icon()
-          time.sleep(.5)
+      while True:
+        currVolume = self.audio.getVolume()
+        TaskBarIcon.refresh_icon(currVolume)
+        self.icon.update_icon()
+        time.sleep(.5)
 
 class App(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, wx.ID_ANY, "", size=(1,1))
-        wx.Panel(self)
-        self.Bind(wx.EVT_CLOSE, self.onClose)
+      wx.Frame.__init__(self, None, wx.ID_ANY, "", size=(1,1))
+      wx.Panel(self)
+      self.Bind(wx.EVT_CLOSE, self.onClose)
 
-        self.icon = TaskBarIcon(self)
-        self.audio = Audio()
-        IconUpdateThread(self.icon, self.audio)
+      self.icon = TaskBarIcon(self)
+      self.audio = Audio()
+      IconUpdateThread(self.icon, self.audio)
       
     def onClose(self, evt):
-        self.icon.RemoveIcon()
-        self.icon.Destroy()
-        self.Destroy()
+      self.icon.RemoveIcon()
+      self.icon.Destroy()
+      self.Destroy()
 
 if __name__ == "__main__":
-    wxApp = wx.App()
-    App()
-    wxApp.MainLoop()
+  wxApp = wx.App()
+  App()
+  wxApp.MainLoop()
