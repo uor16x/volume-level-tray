@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw,ImageFont
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
-from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume, ISimpleAudioVolume
 from threading import Thread
 import wx.adv
 import wx
@@ -13,8 +13,12 @@ class Audio:
     interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
     self.volume = cast(interface, POINTER(IAudioEndpointVolume))
 
-  def getVolume(self):
+  def get_volume(self):
     return int(round(self.volume.GetMasterVolumeLevelScalar() * 100))
+
+  def toggle_mute(self):
+    isMuted = self.volume.GetMute()
+    self.volume.SetMute(not isMuted, None)
 
 class TaskBarIcon(wx.adv.TaskBarIcon):
     tray_icon = 'volume_tray.ico'
@@ -56,7 +60,8 @@ class IconUpdateThread(Thread):
       self.start()
     def run(self):
       while True:
-        currVolume = self.audio.getVolume()
+        currVolume = self.audio.get_volume()
+        self.audio.toggle_mute()
         TaskBarIcon.refresh_icon(currVolume)
         self.icon.update_icon()
         time.sleep(.5)
