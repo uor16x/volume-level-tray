@@ -1,6 +1,12 @@
 import subprocess
+import sys
+import os
 
-independent_process = subprocess.Popen(
-    'python ./index.py',
-    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
-)
+index_file = 'index.py'
+if getattr(sys, 'frozen', False):
+  application_path = sys._MEIPASS
+else:
+  application_path = os.path.dirname(os.path.abspath(__file__))
+
+index_path = os.path.join(application_path, index_file)
+subprocess.call('python ' + index_path, shell=True)
