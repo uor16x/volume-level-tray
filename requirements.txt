@@ -1,0 +1,4 @@
+comtypes==1.1.11
+Pillow==9.1.1
+pycaw==20220416
+wxPython==4.1.1
