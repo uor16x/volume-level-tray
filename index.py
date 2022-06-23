@@ -4,9 +4,12 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from threading import Thread
 from os.path import exists
+from os import path, mkdir
 import wx.adv
 import wx
 import time
+
+APP_DATA_PATH = path.expandvars(r'%LOCALAPPDATA%\VolumeLevelTray')
 
 class Audio:
   """Class"""
@@ -30,7 +33,7 @@ class Audio:
 
 class TaskBarIcon(wx.adv.TaskBarIcon):
   """Class for taskbar icon"""
-  tray_icon = 'volume_tray.ico'
+  tray_icon = path.join(APP_DATA_PATH, 'volume_level.ico')
   font_type = ImageFont.truetype("arial.ttf", 45)
   # icon is a square, so its size could be represented by a single number
   size = 50
@@ -103,7 +106,8 @@ class App(wx.Frame):
     wx.Frame.__init__(self, None, wx.ID_ANY, "", size=(1,1))
     wx.Panel(self)
     self.Bind(wx.EVT_CLOSE, self.on_close)
-
+    if not exists(TaskBarIcon.tray_icon):
+      TaskBarIcon.refresh_icon(0, False)
     # create taskbar icon
     self.icon = TaskBarIcon(self)
     # create audio object
@@ -124,6 +128,8 @@ class App(wx.Frame):
     self.Destroy()
 
 if __name__ == "__main__":
+  if not exists(APP_DATA_PATH):
+    mkdir(APP_DATA_PATH)
   wxApp = wx.App()
   App()
   wxApp.MainLoop()
