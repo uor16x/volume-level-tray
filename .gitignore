@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 
 # Custom
-volume_tray.ico
 .vscode
 output/
